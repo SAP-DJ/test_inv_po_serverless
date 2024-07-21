@@ -1,0 +1,55 @@
+_schema-version: "3.2"
+ID: serverlesspo1
+version: 0.0.1
+modules:
+- name: serverlesspo1-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: serverlesspo1-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - cominvenioserverlesspo1.zip
+      name: cominvenioserverlesspo1
+      target-path: resources/
+- name: cominvenioserverlesspo1
+  type: html5
+  path: serverlesspo1
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: serverlesspo1-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: serverlesspo1-html5-srv
+    service-plan: app-host
+- name: serverlesspo1-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: false
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: serverlesspo1-destination-service
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
